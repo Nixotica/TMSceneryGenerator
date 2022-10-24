@@ -23,5 +23,6 @@ namespace Interface {
     //actual components of the ui go here i think
     void RenderMenu() {
         UI::Text("TMSceneryGenerator");
+        
     }
 }
