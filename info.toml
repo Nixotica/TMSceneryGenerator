@@ -1,4 +1,4 @@
 [meta]
-name = "Scenery Generator"
-author = "Nixotica & DontCare"
-category = "Testing"
+name        = "Test Plugin"
+author      = "Nixotica and DontCare"
+category    = "Testing"
