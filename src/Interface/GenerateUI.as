@@ -1,16 +1,27 @@
-void RenderUI() {
-    // Get editor; if null then we aren't in editor, so return
-    auto editor = Editor();
-    if (editor is null) return;
+namespace Interface {
 
+    bool windowOpen = IsDevMode();
+    void RenderInterface() {
+        
+        //default built in styling for components, like the ugly green they use everywhere
+        TMUI::PushWindowStyle();
+
+        //sets ui window size, its resizable
+        UI::SetNextWindowSize(480,720);
+
+        //actually starts the menu dings if dev mode on
+        if(UI::Begin("TMSceneryGenerator", windowOpen))
+        {
+            RenderMenu();
+        }
+        
+        //cleanup code
+        UI::End();
+        TMUI::PopWindowStyle();
+    }
     
-}
-
-void RenderInterfaceBackdrop() {
-    nvg::BeginPath();
-    nvg::RoundedRect(vec2(50, 950), vec2(250, 150), 10);
-    nvg::FillColor(vec4(50./255, 50./255, 50./255, 200./255));
-    nvg::Fill();
-    nvg::ClosePath();
-    nvg::Text(vec2(300, 900), "Le Epic Scenery Generator");
+    //actual components of the ui go here i think
+    void RenderMenu() {
+        UI::Text("TMSceneryGenerator");
+    }
 }
