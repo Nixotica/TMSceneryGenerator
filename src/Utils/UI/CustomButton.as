@@ -2,7 +2,7 @@ class CustomButton {
     bool visible = true;
     bool isHovered = false;
     
-    string action = "none";
+    int action = Button::button_enum::max_action;
     string label = "";
     int x = 0;
     int y = 0;
@@ -14,7 +14,7 @@ class CustomButton {
     string hintText = "";
 
     CustomButton(
-        string action, string label, int x = 5, int y = 5, int width = 30, int height = 30, int fontSize = 20, 
+        int action, string label, int x = 5, int y = 5, int width = 30, int height = 30, int fontSize = 20, 
         vec4 color = vec4(1, 1, 1, 1), vec4 hoverColor = vec4(0, 1, 0, 1), string hintText = ""
     ) {
         this.action = action;
