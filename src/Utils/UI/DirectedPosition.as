@@ -1,4 +1,4 @@
-class DirectedPosition{
+/*class DirectedPosition{
     int3 position;
     CGameEditorPluginMap::ECardinalDirections direction;
     DirectedPosition(int x = 0, int y = 0, int z = 0, CGameEditorPluginMap::ECardinalDirections direction = CGameEditorPluginMap::ECardinalDirections::North) {
@@ -137,4 +137,4 @@ DirectedPosition@ FromString(string input) {
     auto direction = CGameEditorPluginMap::ECardinalDirections(Text::ParseInt(parts[3]));
     return DirectedPosition(x, y, z, direction);
 }
-}
+}*/

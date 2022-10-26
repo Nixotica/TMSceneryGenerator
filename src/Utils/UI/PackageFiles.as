@@ -1,4 +1,4 @@
-namespace Package {
+/*namespace Package {
     void Test() {
         auto sourcePath = Meta::ExecutingPlugin().SourcePath;
         auto unpackageFolder = sourcePath + 'out/';
@@ -107,4 +107,4 @@ namespace Package {
         outFile.Write(package);
         outFile.Close();
     }
-}
+}*/

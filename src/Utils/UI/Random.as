@@ -1,7 +1,7 @@
 // file from AvondaleZPR
 // https://github.com/AvondaleZPR/TMTrackGenerator/blob/main/random.as
 
-namespace Random {
+/*namespace Random {
 
 
 bool seedEnabled = false;
@@ -126,3 +126,4 @@ void CheckDistribution() {
 }
 
 }
+*/
