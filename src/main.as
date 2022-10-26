@@ -2,6 +2,23 @@
 DontCare edit
 */
 
+namespace Compatibility 
+{
+   bool EditorIsNull() 
+   {
+      return cast<CGameCtnEditorFree> (Editor()) is null;
+   }
+
+   bool IsMapTesting() 
+   {
+#if TMNEXT
+      return GetApp().CurrentPlayground !is null;
+#else
+      CGameCtnEditorFree@ editor = cast<CGameCtnEditorFree>(Editor());
+      return editor !is null && editor.PluginMapType.IsSwitchedToPlayground;
+#endif
+   }
+}
 
 //Entry Point
 void Main()
@@ -16,7 +33,8 @@ void Render() {
    TMDialog::Render();
 
    //renders the interface
-   Interface::RenderInterface();
+   InterfaceNew::RenderInterface();
+   InterfaceNew::RenderMenu();
 }
 
 // we can define the editor here to simplify each time we grab it
