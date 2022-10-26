@@ -1,4 +1,4 @@
-namespace Button {
+/*namespace Button {
     enum button_enum {
         generate_random_block,
         max_action,
@@ -10,4 +10,4 @@ namespace Button {
     );
 
     dictionary button_dict = {{button_enum::generate_random_block, generate_random_block}}
-}
+}*/

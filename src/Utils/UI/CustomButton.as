@@ -1,4 +1,4 @@
-class CustomButton {
+/*class CustomButton {
     bool visible = true;
     bool isHovered = false;
     
@@ -28,4 +28,4 @@ class CustomButton {
         this.hoverColor = hoverColor;
         this.hintText = hintText;
     }
-};
+};*/
