@@ -39,7 +39,7 @@ namespace Interface {
                 for(int y = 0; y < MAP_SIZE; y++) {
                     for(int z = 0; z < MAP_SIZE; z++) {
                         auto block = editor.PluginMapType.GetBlock(int3(x, y, z));
-                        if(block == null || block.BlockInfo.IdName == "Grass"){}
+                        if(block == null || block.BlockInfo.IdName == "Grass"){ continue; }
                         else {
                             route.addRouteBlock(Generate::Block(block.BlockInfo, int3(x, y, z), block.Dir));
                         }
