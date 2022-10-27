@@ -33,8 +33,7 @@ void Render() {
    TMDialog::Render();
 
    //renders the interface
-   InterfaceNew::RenderInterface();
-   InterfaceNew::RenderMenu();
+   Interface::RenderInterface();
 }
 
 // we can define the editor here to simplify each time we grab it
