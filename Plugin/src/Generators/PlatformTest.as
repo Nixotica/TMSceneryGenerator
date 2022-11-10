@@ -9,15 +9,50 @@
  */
 
 // TODO make this programmatic and store it somewhere, since this can fluctuate 
-int MAP_SIZE = 48;
+int MAP_SIZE_XZ = 48;
+int MAP_SIZE_Y = 40;
 
 namespace PlatformTest {
     // This stores all the blocks in the editor, all functions accessing this variable are responsible for
     // ensuring that it is accurate when blocks are added/removed from the editor
     CGameCtnBlock[] allBlocksInEditor;
-    
-    Generate::Block getGeneratedBlock() {
+    dictionary probability_map = {
+        // TODO: WHAT IS THE ID FOR AIR AND PLATFORM????
+    };
 
+    /**
+     * Provided a location, return a list of the adjacent blocks (not corners or edges yet, might in future)
+     */
+    CGameCtnBlock[] getSurroundingBlocks(vec3 location) {
+        auto editor = Editor();
+        CGameCtnBlock[] surroundingBlocks;
+        auto x = location.x;
+        auto y = location.y;
+        auto z = location.z;
+        surroundingBlocks.InsertLast(editor.PluginMapType.GetBlock(int3(x-1, y, z)));
+        surroundingBlocks.InsertLast(editor.PluginMapType.GetBlock(int3(x+1, y, z)));
+        surroundingBlocks.InsertLast(editor.PluginMapType.GetBlock(int3(x, y-1, z)));
+        surroundingBlocks.InsertLast(editor.PluginMapType.GetBlock(int3(x, y+1, z)));
+        surroundingBlocks.InsertLast(editor.PluginMapType.GetBlock(int3(x, y, z-1)));
+        surroundingBlocks.InsertLast(editor.PluginMapType.GetBlock(int3(x, y, z+1)));
+        return surroundingBlocks;
+    }
+
+    CGameCtnBlock platform_collapse_func(
+        CGameCtnBlock[] surroundingBlocks,
+        dictionary probability_map) {
+            
+    }
+
+    /**
+     * Provided a location, return the most appropriate block to generate at this location
+     * 
+     * NOTE: This is VERY simple right now, but this provides a basis for our more complex algos later when
+     * we have more data to work with and train on
+     */
+    CGameCtnBlock collapse(vec3 location) {
+        CGameCtnBlock[] surroundingBlocks = getSurroundingBlocks(location);
+        return platform_collapse_func(surroundingBlocks, probability_map);
     }
 
     /** 
@@ -28,19 +63,19 @@ namespace PlatformTest {
      */
     CGameCtnBlock[] getAllBlocksInEditor() {
         auto editor = Editor();
-        CGameCtnBlock[] allBlocks;
-        for(int x = 0; x < MAP_SIZE; x++) {
-            for(int y = 0; y < MAP_SIZE; y++) {
-                for(int z = 0; z < MAP_SIZE; z++) {
+        for(int x = 0; x < MAP_SIZE_XZ; x++) {
+            for(int y = 0; y < MAP_SIZE_Y; y++) {
+                for(int z = 0; z < MAP_SIZE_XZ; z++) {
                     // TODO for multi-location spanning blocks, will this add them again?
                     // if so then we need to add a check for that
                     auto block = editor.PluginMapType.GetBlock(int3(x,y,z));
                     if(block != null && block.BlockInfo.IdName != "Grass") {
-                        allBlocks.InsertLast(block);
+                        allBlocksInEditor.InsertLast(block);
                     }
                 }
             }
         }
+        return allBlocksInEditor;
     }
 
     /**
@@ -53,9 +88,10 @@ namespace PlatformTest {
     /**
      * Grabs a random block from the input list of blocks
      */
-    CGameCtnBlock getRandomBlock(CGameCtnBlock[] blocks) {
+    CGameCtnBlock getRandomBlockFromList(CGameCtnBlock[] blocks) {
+        auto editor = Editor();
         int randomIdx = Math::Rand(0, blocks.Length);
-        return 
+        return editor.PluginMapType.BlockModels[randomIdx];
     }
 
     /**
@@ -67,5 +103,7 @@ namespace PlatformTest {
         if (allBlocksInEditor.Length == 0) {
             allBlocksInEditor = getAllBlocksInEditor();
         }
+
+        // TODO remember to add the generated block to allBlocksInEditor
     }
 }
