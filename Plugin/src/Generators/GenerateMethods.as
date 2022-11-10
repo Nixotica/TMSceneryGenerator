@@ -24,7 +24,7 @@ namespace Generate {
         CGameEditorPluginMap::ECardinalDirections getDirection() {
             return dir;
         }
-    }
+    };
     
     CGameCtnBlockInfo@ getRandomBlock(CGameCtnEditorCommon@ editor) {
         return editor.PluginMapType.BlockModels[Math::Rand(0, editor.PluginMapType.BlockModels.Length)];

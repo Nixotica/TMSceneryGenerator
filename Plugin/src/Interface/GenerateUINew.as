@@ -25,6 +25,10 @@ namespace Interface {
             }
         }
 
+        if(UI::Button("Platform test (one block)", size=vec2(200, 50))) {
+            PlatformTest::generateBlock();
+        }
+
         if(UI::Checkbox("Air Mode", airMode)) {
             if(airMode) { airMode = false; }
             else
