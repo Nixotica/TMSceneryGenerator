@@ -2,7 +2,8 @@ namespace Interface {
     [Setting category="General" name="Window Visible" hidden]
     bool settingWindowVisible = true;
     bool airMode = true;
-    int MAP_SIZE = 47;
+    int MAP_SIZE_XZ = 48;
+    int MAP_SIZE_Y = 40;
     auto route = Route();
     
     void RenderInterface() {
@@ -39,9 +40,9 @@ namespace Interface {
         }
 
         if(UI::Button("Save Route", vec2(200, 50))) {
-            for(int x = 0; x < MAP_SIZE; x++) {
-                for(int y = 0; y < MAP_SIZE; y++) {
-                    for(int z = 0; z < MAP_SIZE; z++) {
+            for(int x = 0; x < MAP_SIZE_XZ; x++) {
+                for(int y = 0; y < MAP_SIZE_Y; y++) {
+                    for(int z = 0; z < MAP_SIZE_XZ; z++) {
                         auto block = editor.PluginMapType.GetBlock(int3(x, y, z));
                         if(block == null || block.BlockInfo.IdName == "Grass"){ continue; }
                         else {

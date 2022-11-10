@@ -1,8 +1,0 @@
-namespace Generate {
-    bool initialized = false;
-    bool isGenerating = false;
-    
-    void Initialize() {
-
-    }
-}
