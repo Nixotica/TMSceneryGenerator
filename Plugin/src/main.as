@@ -23,7 +23,6 @@ namespace Compatibility
 //Entry Point
 void Main()
 {
-   print("Hello DontCare");
 
 }
 
