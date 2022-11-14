@@ -26,8 +26,12 @@ namespace Interface {
             }
         }
 
-        if(UI::Button("Platform test (one block)", size=vec2(200, 50))) {
-            PlatformTest::generateBlock();
+        if(UI::Button("print all blocks", vec2(200,50))) {
+            PlatformTest::printAllBlocks();
+        }
+
+        if(UI::Button("Platform test (one block)", vec2(200, 50))) {
+            //PlatformTest::generateBlock();
         }
 
         if(UI::Checkbox("Air Mode", airMode)) {

@@ -20,6 +20,10 @@ namespace PlatformTest {
         // TODO: WHAT IS THE ID FOR AIR AND PLATFORM????
     };
 
+    dictionary block_ids = {
+        
+    };
+
     /**
      * Provided a location, return a list of the adjacent blocks (not corners or edges yet, might in future)
      */
@@ -38,11 +42,11 @@ namespace PlatformTest {
         return surroundingBlocks;
     }
 
-    CGameCtnBlock platform_collapse_func(
+    /*CGameCtnBlock platform_collapse_func(
         CGameCtnBlock[] surroundingBlocks,
         dictionary probability_map) {
             
-    }
+    }*/
 
     /**
      * Provided a location, return the most appropriate block to generate at this location
@@ -50,10 +54,11 @@ namespace PlatformTest {
      * NOTE: This is VERY simple right now, but this provides a basis for our more complex algos later when
      * we have more data to work with and train on
      */
+     /*
     CGameCtnBlock collapse(vec3 location) {
         CGameCtnBlock[] surroundingBlocks = getSurroundingBlocks(location);
         return platform_collapse_func(surroundingBlocks, probability_map);
-    }
+    }*/
 
     /** 
      * Returns a list of all non-air blocks in the editor
@@ -61,7 +66,8 @@ namespace PlatformTest {
      * NOTE: This should be called very infrequently, and then store the array in memory, as this is super expensive
      * It also should be moved to a more common location, since it's likely going to be needed for a lot of algos
      */
-    CGameCtnBlock[] getAllBlocksInEditor() {
+
+    /*CGameCtnBlock[] getAllBlocksInEditor() {
         auto editor = Editor();
         for(int x = 0; x < MAP_SIZE_XZ; x++) {
             for(int y = 0; y < MAP_SIZE_Y; y++) {
@@ -76,6 +82,15 @@ namespace PlatformTest {
             }
         }
         return allBlocksInEditor;
+    }*/
+
+    void printAllBlocks() {
+        auto editor = Editor();
+        int length = editor.PluginMapType.BlockModels.Length;
+        for(int i = 0; i < length; i++) {
+            auto block = editor.PluginMapType.BlockModels[i];
+            print(block.IdName +" " +i);
+        }
     }
 
     /**
@@ -88,16 +103,16 @@ namespace PlatformTest {
     /**
      * Grabs a random block from the input list of blocks
      */
-    CGameCtnBlock getRandomBlockFromList(CGameCtnBlock[] blocks) {
+    CGameCtnBlock@ getRandomBlockFromList(CGameCtnBlock[] blocks) {
         auto editor = Editor();
         int randomIdx = Math::Rand(0, blocks.Length);
-        return editor.PluginMapType.BlockModels[randomIdx];
+        return editor.PluginMapType.Blocks[randomIdx];
     }
 
     /**
      * Publicly called to generate a block from our algorithm (platform or air)
      */
-    void generateBlock() {
+    /*void generateBlock() {
         // This is to ensure we only run this once or if it makes sense to
         // All other functions should properly handle this array if they modify the blocks in the editor
         if (allBlocksInEditor.Length == 0) {
@@ -105,5 +120,5 @@ namespace PlatformTest {
         }
 
         // TODO remember to add the generated block to allBlocksInEditor
-    }
+    }*/
 }

@@ -24,6 +24,7 @@ namespace Compatibility
 void Main()
 {
    print("Hello DontCare");
+
 }
 
 //is called each frame
