@@ -23,18 +23,30 @@ namespace PlatformTest {
     // This stores an internal memory of which locations in the map have been generated so far, so that
     // we don't attempt to overwrite already generated blocks or air
     int3[] generatedLocations;
-    
-    array<array<array<int>>> probability_map = {
-        {895, {
-            {-1, 0.75}, 
-            {895, 0.25}}}
-    };
 
-    dictionary block_id_to_name = {
-        {
-            895, "PlatformTechBase"
+    // An instance of the editor
+    CGameCtnEditorCommon editor = Editor();
+
+    dictionary probability_map = {
+        {895, {
+            {-1, 0.75},
+            {895, 0.25}}
         }
     };
+
+    dictionary block_name_to_id = {
+        {
+            "PlatformTechBase", 895
+        }
+    };
+
+    /**
+     * Provided a base block, get all of its surrounding block probabilities 
+     */
+    dictionary getBlockSurroundingProbabilities(CGameCtnBlock block) {
+        auto block_id = block_name_to_id.Get(block.IdName);
+        return probability_map.Get(block_id);
+    }
 
     /**
      * Provided a location, get the triples of the 6 surrounding locations back as a list of int3s
@@ -69,7 +81,7 @@ namespace PlatformTest {
     /**
      * Provided a list of locations, return only those locations which are generated
      */
-    int3[] getUngeneratedLocations(int3[] locations) {
+    int3[] getGeneratedLocations(int3[] locations) {
         int3[] generated_locations;
         for (int i = 0; i < locations.Length; i++) {
             if (generatedLocations.Find(locations[i]) >= 0) {
@@ -83,7 +95,6 @@ namespace PlatformTest {
      * Provided a location, return a list of the adjacent blocks (not corners or edges yet, might in future)
      */
     CGameCtnBlock[] getSurroundingBlocks(int3 location) {
-        auto editor = Editor();
         CGameCtnBlock[] surroundingBlocks;
         auto x = location.x;
         auto y = location.y;
@@ -91,14 +102,10 @@ namespace PlatformTest {
         auto surrounding_locations = getSurroundingLocations(location);
         for (int i = 0; i < surrounding_locations.Length; i++) {
             auto block = editor.PluginMapType.GetBlock(surrounding_locations[i]);
-            if (block_id_to_name.)
+            if (block_name_to_id.Exists(block.IdName)) {
+                surroundingBlocks.InsertLast(block);
+            }
         }
-        surroundingBlocks.InsertLast(editor.PluginMapType.GetBlock(int3(x-1, y, z)));
-        surroundingBlocks.InsertLast(editor.PluginMapType.GetBlock(int3(x+1, y, z)));
-        surroundingBlocks.InsertLast(editor.PluginMapType.GetBlock(int3(x, y-1, z)));
-        surroundingBlocks.InsertLast(editor.PluginMapType.GetBlock(int3(x, y+1, z)));
-        surroundingBlocks.InsertLast(editor.PluginMapType.GetBlock(int3(x, y, z-1)));
-        surroundingBlocks.InsertLast(editor.PluginMapType.GetBlock(int3(x, y, z+1)));
         return surroundingBlocks;
     }
 
@@ -106,9 +113,21 @@ namespace PlatformTest {
      * Provided an input location, get a random surrounding location in one of the 6 directions for which
      * the generated block has yet to be decided
      */
-    vec3 getRandomSurroundingUngeneratedLocation(int3 location) {
-        int3 surrounding_locations = getSurroundingLocations(location);
+    int3 getRandomSurroundingUngeneratedLocation(int3 location) {
+        array<int3> ungenerated_locations;
+        auto surrounding_locations = getSurroundingLocations(location);
+        for (int i = 0; i < surrounding_locations.Length; i++) {
+            if (generatedLocations.Find(surrounding_locations[i]) < 0) {
+                ungenerated_locations.InsertLast(surrounding_locations[i]);
+            }
+        }
 
+        if (ungenerated_locations.Length == 0) {
+            print("No ungenerated surrounding locations!");
+            return int3(-1, -1, -1);
+        }
+
+        return ungenerated_locations[Math::Rand(0, ungenerated_locations.Length)];
     }
 
     /**
@@ -119,7 +138,25 @@ namespace PlatformTest {
      */
     CGameCtnBlock collapse(int3 location) {
         CGameCtnBlock[] surrounding_blocks = getSurroundingBlocks(location);
-        CGameCtnBlock base_block = getRandomBlockFromList(surrounding_blocks);
+
+        // Iterate over all surrounding blocks' valid surrounding blocks (in this direction, but simplifying for now)
+        dictionary block_probabilities;
+        for (int i = 0; i < surrounding_blocks.Length; i++) {
+            // For the first block, we simply add every block since X ∩ X = X
+            if (i == 0) {
+                dictionary possible_blocks_and_probs = getBlockSurroundingProbabilities(surrounding_blocks[i]);
+                auto keys = possible_blocks_and_probs.GetKeys();
+                for (int j = 0; j < possible_blocks_and_probs.GetSize(); j++) {
+                    // HOW DO YOU ITERATE OVER A DICTIONARY???
+                    /**
+                     * pseudo-code:
+                     * block_probabilities.set(possible_blocks_and_probs[j].key, possible_blocks_and_probs[j].value);
+                     */
+                }
+                // TODO then for every other block, remove blocks which aren't present in both dictionaries, and 
+                // update the probabilities of blocks in both with running probability (P_block = P_block / i+1)
+            }
+        }
     }
 
     /** 
@@ -156,13 +193,6 @@ namespace PlatformTest {
     }
 
     /**
-     * Add a block to the list of all blocks in the editor
-     */
-    void addBlockToAllBlocksList(CGameCtnBlock block) {
-        allBlocksInEditor.InsertLast(block);
-    }
-
-    /**
      * Grabs a random block from the input list of blocks
      */
     CGameCtnBlock@ getRandomBlockFromList(CGameCtnBlock[] blocks) {
@@ -181,6 +211,13 @@ namespace PlatformTest {
             allBlocksInEditor = getAllBlocksInEditor();
         }
 
-        // TODO remember to add the generated block to allBlocksInEditor
+        auto base_block = getRandomBlockFromList(allBlocksInEditor);
+        auto loc_to_generate = getRandomSurroundingUngeneratedLocation(base_block.Coord);
+        auto block_generated = collapse(loc_to_generate);
+
+        editor.PluginMapType.PlaceBlock(block_generated.BlockInfo, block_generated.Coord, block_generated.Dir);
+
+        allBlocksInEditor.InsertLast(block_generated);
+        generatedLocations.InsertLast(loc_to_generate);
     }
 }

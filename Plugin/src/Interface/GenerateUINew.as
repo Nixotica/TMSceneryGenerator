@@ -31,9 +31,10 @@ namespace Interface {
         }
 
         if(UI::Button("Platform test (one block)", vec2(200, 50))) {
-            //PlatformTest::generateBlock();
+            PlatformTest::generateBlock();
         }
 
+        // TODO update the UI to have checked/unchecked box
         if(UI::Checkbox("Air Mode", airMode)) {
             if(airMode) { airMode = false; }
             else
