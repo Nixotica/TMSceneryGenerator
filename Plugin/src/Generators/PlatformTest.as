@@ -43,7 +43,7 @@ namespace PlatformTest {
     /**
      * Provided a base block, get all of its surrounding block probabilities 
      */
-    dictionary getBlockSurroundingProbabilities(CGameCtnBlock block) {
+    array<array<float>> getBlockSurroundingProbabilities(CGameCtnBlock block) {
         auto block_id = block_name_to_id.Get(block.IdName);
         return probability_map.Get(block_id);
     }
@@ -96,9 +96,6 @@ namespace PlatformTest {
      */
     CGameCtnBlock[] getSurroundingBlocks(int3 location) {
         CGameCtnBlock[] surroundingBlocks;
-        auto x = location.x;
-        auto y = location.y;
-        auto z = location.z;
         auto surrounding_locations = getSurroundingLocations(location);
         for (int i = 0; i < surrounding_locations.Length; i++) {
             auto block = editor.PluginMapType.GetBlock(surrounding_locations[i]);
@@ -142,21 +139,49 @@ namespace PlatformTest {
         // Iterate over all surrounding blocks' valid surrounding blocks (in this direction, but simplifying for now)
         dictionary block_probabilities;
         for (int i = 0; i < surrounding_blocks.Length; i++) {
+            array<array<double>> possible_blocks_and_probs = getBlockSurroundingProbabilities(surrounding_blocks[i]);
             // For the first block, we simply add every block since X ∩ X = X
             if (i == 0) {
-                dictionary possible_blocks_and_probs = getBlockSurroundingProbabilities(surrounding_blocks[i]);
-                auto keys = possible_blocks_and_probs.GetKeys();
-                for (int j = 0; j < possible_blocks_and_probs.GetSize(); j++) {
-                    // HOW DO YOU ITERATE OVER A DICTIONARY???
-                    /**
-                     * pseudo-code:
-                     * block_probabilities.set(possible_blocks_and_probs[j].key, possible_blocks_and_probs[j].value);
-                     */
+                for (int j = 0; j < possible_blocks_and_probs.Length; j++) {
+                    block_probabilities.Set(possible_blocks_and_probs[j][0], possible_blocks_and_probs[j][1]);
                 }
-                // TODO then for every other block, remove blocks which aren't present in both dictionaries, and 
-                // update the probabilities of blocks in both with running probability (P_block = P_block / i+1)
+            }
+            // Then for every other block, remove blocks which aren't present in both dictionaries, and 
+            // update the probabilities of blocks in both with running probability (P_block = P_block / i+1)
+            else {
+                for (int j = 0; j < possible_blocks_and_probs.Length; j++) {
+                    if (!block_probabilities.Exists(possible_blocks_and_probs[j][0])) {
+                        block_probabilities.Delete(possible_blocks_and_probs[j][0]);
+                    }
+                    else {
+                        block_probabilities.Set(possible_blocks_and_probs[j][0], 
+                            (possible_blocks_and_probs[j][1] + block_probabilities.Get(possible_blocks_and_probs[j][0]) / i));
+                    }
+                }
             }
         }
+
+        // Change this to an iterable type (let's try to simplify logic in the future)
+        auto keys = block_probabilities.GetKeys();
+        double[] key_weights;
+        for (int i = 0; i < keys.Length; i++) {
+            key_weights.InsertLast(block_probabilities.Get(keys[i]));
+        }
+
+        // Now that we have all the probabilities, randomly choose a block ID with weights as the probabilities
+        double random_prob = Math::Rand(0, 1);
+        for (int i = 0; i < keys.Length; i++) {
+            if (random_prob < key_weights[i]) {
+                // This is our block, return it (or null if air block)
+                int block_id = keys[i];
+                if (block_id == -1) {
+                    return nullptr;
+                }
+                return editor.PluginMapType.Blocks[block_id];
+            }
+            random_prob -= key_weights[i];
+        }
+        print("Something went wrong in collapse function!");
     }
 
     /** 
@@ -214,6 +239,9 @@ namespace PlatformTest {
         auto base_block = getRandomBlockFromList(allBlocksInEditor);
         auto loc_to_generate = getRandomSurroundingUngeneratedLocation(base_block.Coord);
         auto block_generated = collapse(loc_to_generate);
+
+        // It's quite possible this is an air block, if so then handle differently
+
 
         editor.PluginMapType.PlaceBlock(block_generated.BlockInfo, block_generated.Coord, block_generated.Dir);
 
