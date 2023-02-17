@@ -25,12 +25,15 @@ namespace PlatformTest {
     int3[] generatedLocations;
 
     // An instance of the editor
-    CGameCtnEditorCommon editor = Editor();
+    auto editor = Editor();
 
     dictionary probability_map = {
-        {895, {
-            {-1, 0.75},
-            {895, 0.25}}
+        {
+            "895", dictionary = 
+            {
+                {"-1", 0.75},
+                {"895", 0.25}
+            }
         }
     };
 
@@ -43,9 +46,9 @@ namespace PlatformTest {
     /**
      * Provided a base block, get all of its surrounding block probabilities 
      */
-    array<array<float>> getBlockSurroundingProbabilities(CGameCtnBlock block) {
-        auto block_id = block_name_to_id.Get(block.IdName);
-        return probability_map.Get(block_id);
+    dictionary getBlockSurroundingProbabilities(CGameCtnBlock@ block) {
+        auto block_id = string(block_name_to_id[block.IdName]);
+        return dictionary(probability_map[block_id]);
     }
 
     /**
@@ -133,29 +136,30 @@ namespace PlatformTest {
      * NOTE: This is VERY simple right now, but this provides a basis for our more complex algos later when
      * we have more data to work with and train on
      */
-    CGameCtnBlock collapse(int3 location) {
+    CGameCtnBlock@ collapse(int3 location) {
         CGameCtnBlock[] surrounding_blocks = getSurroundingBlocks(location);
 
         // Iterate over all surrounding blocks' valid surrounding blocks (in this direction, but simplifying for now)
         dictionary block_probabilities;
         for (int i = 0; i < surrounding_blocks.Length; i++) {
-            array<array<double>> possible_blocks_and_probs = getBlockSurroundingProbabilities(surrounding_blocks[i]);
+            auto possible_blocks_and_probs = getBlockSurroundingProbabilities(surrounding_blocks[i]);
+            auto possible_keys = possible_blocks_and_probs.GetKeys();
             // For the first block, we simply add every block since X ∩ X = X
             if (i == 0) {
-                for (int j = 0; j < possible_blocks_and_probs.Length; j++) {
-                    block_probabilities.Set(possible_blocks_and_probs[j][0], possible_blocks_and_probs[j][1]);
+                for (int key = 0; key < possible_keys.get_Length(); key++) {
+                    block_probabilities.Set(possible_keys[key], possible_blocks_and_probs[possible_keys[key]]);
                 }
             }
             // Then for every other block, remove blocks which aren't present in both dictionaries, and 
             // update the probabilities of blocks in both with running probability (P_block = P_block / i+1)
             else {
-                for (int j = 0; j < possible_blocks_and_probs.Length; j++) {
-                    if (!block_probabilities.Exists(possible_blocks_and_probs[j][0])) {
-                        block_probabilities.Delete(possible_blocks_and_probs[j][0]);
+                for (int key = 0; key < possible_keys.get_Length(); key++) {
+                    if (!block_probabilities.Exists(possible_keys[key])) {
+                        block_probabilities.Delete(string(possible_blocks_and_probs[possible_keys[key]]));
                     }
                     else {
-                        block_probabilities.Set(possible_blocks_and_probs[j][0], 
-                            (possible_blocks_and_probs[j][1] + block_probabilities.Get(possible_blocks_and_probs[j][0]) / i));
+                        block_probabilities.Set(string(possible_keys[key]), 
+                            (double(possible_blocks_and_probs[possible_keys[key]]) + double(block_probabilities[possible_keys[key]])) / i);
                     }
                 }
             }
@@ -165,7 +169,7 @@ namespace PlatformTest {
         auto keys = block_probabilities.GetKeys();
         double[] key_weights;
         for (int i = 0; i < keys.Length; i++) {
-            key_weights.InsertLast(block_probabilities.Get(keys[i]));
+            key_weights.InsertLast(double(block_probabilities[keys[i]]));
         }
 
         // Now that we have all the probabilities, randomly choose a block ID with weights as the probabilities
@@ -173,15 +177,16 @@ namespace PlatformTest {
         for (int i = 0; i < keys.Length; i++) {
             if (random_prob < key_weights[i]) {
                 // This is our block, return it (or null if air block)
-                int block_id = keys[i];
+                auto block_id = Text::ParseInt(keys[i]);
                 if (block_id == -1) {
-                    return nullptr;
+                    return editor.PluginMapType.Blocks[block_id];
                 }
                 return editor.PluginMapType.Blocks[block_id];
             }
             random_prob -= key_weights[i];
         }
         print("Something went wrong in collapse function!");
+        return editor.PluginMapType.Blocks[-1];
     }
 
     /** 
@@ -236,14 +241,17 @@ namespace PlatformTest {
             allBlocksInEditor = getAllBlocksInEditor();
         }
 
+
         auto base_block = getRandomBlockFromList(allBlocksInEditor);
-        auto loc_to_generate = getRandomSurroundingUngeneratedLocation(base_block.Coord);
+        auto base_block_coords = int3(base_block.CoordX, base_block.CoordY, base_block.CoordZ);
+        auto loc_to_generate = getRandomSurroundingUngeneratedLocation(base_block_coords);
         auto block_generated = collapse(loc_to_generate);
+        auto block_generated_coords = int3(block_generated.CoordX, block_generated.CoordY, block_generated.CoordZ);
 
         // It's quite possible this is an air block, if so then handle differently
 
 
-        editor.PluginMapType.PlaceBlock(block_generated.BlockInfo, block_generated.Coord, block_generated.Dir);
+        editor.PluginMapType.PlaceBlock(block_generated.BlockInfo, block_generated_coords, block_generated.Dir);
 
         allBlocksInEditor.InsertLast(block_generated);
         generatedLocations.InsertLast(loc_to_generate);
